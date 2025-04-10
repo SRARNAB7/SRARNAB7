@@ -1,0 +1,1690 @@
+#############################PROLOG ##################################
+
+#PROJECT: Diabetes Detection based on different factors and Inportance of Diet 
+
+#PURPOSE: TO analyse the reasons for diabetes based on different factors by performing Data Visualizations and Tests 
+
+#DATA: Diabetes_logistic_check_csv : To refer the data related to diabetes
+
+#AUTHOR: Group 3
+
+#CREATED:APR,30,2024
+
+#LATEST: MAY,1,2024
+#############################PROLOG ###################################
+
+```{r}
+install.packages(c("Hmisc","descr","tableone"), dependencies = TRUE)
+```
+```{r}
+packages <- c('Hmisc','descr','tableone')
+```
+
+```{r}
+packages <- c('tidyverse','descr','fmsb','lsr','gridExtra')
+
+```
+
+
+```{r}
+# import the data
+#setwd("C:/Users/asutar1/Documents/HDS/Project")
+diabetes.diagnosed <- read.csv(file= "Diabetes_logistic_check_csv.csv")
+```
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+#converting the variables to the required data types
+diabetes.diagnosed.cleaned <- diabetes.diagnosed %>%
+  mutate(Age = as.numeric(x=Age))%>%
+  mutate(Gender = as.factor(x=Gender))%>%
+  mutate(Blood.Pressure  = as.factor(x= Blood.Pressure))%>%
+  mutate(Family.History.of.Diabetes = as.factor(x=Family.History.of.Diabetes))%>%
+  mutate(Smoking = as.factor(x=Smoking))%>%
+  mutate(Diet = as.factor(x=Diet))%>%
+  mutate(Exercise = as.factor(x=Exercise))%>%
+  mutate(Diagnosis = as.factor(x=Diagnosis))%>%
+  mutate(BMI = as.numeric(x=BMI))%>%
+  mutate(FBS = as.numeric(x=FBS))%>%
+  mutate(HbA1c = as.numeric(x=HbA1c))
+
+summary(object = diabetes.diagnosed.cleaned)
+
+```
+
+```{r}
+#install.packages("tableone")
+library("tableone")
+
+#create basic table 
+diabetes.diagnosed.table<-CreateTableOne(data = diabetes.diagnosed.cleaned)
+print(x = diabetes.diagnosed.table,showAllLevels = TRUE)
+
+```
+Interpretation:
+
+Overall Summary:
+*The dataset comprises 407 observations.
+Age: On average, individuals in the dataset are approximately 49.16 years old, with a standard deviation of 16.31 years.
+Gender: Approximately 63.9% of the individuals are male, accounting for 260 out of 407 observations.
+BMI (Body Mass Index):The average BMI in the dataset is 32.56, with a standard deviation of 9.73.
+Blood Pressure: Among the individuals, 58.7% have high blood pressure, 12.8% have low blood pressure, and 28.5% have normal blood pressure.
+FBS (Fasting Blood Sugar): The mean fasting blood sugar level is 113.82 mg/dL, with a standard deviation of 36.92 mg/dL.
+HbA1c (Glycated Hemoglobin): The average HbA1c level is 6.26%, with a standard deviation of 1.00%.
+Family History of Diabetes: 70.8% of individuals have a family history of diabetes, totaling 288 out of 407 observations.
+Smoking: 76.7% of individuals in the dataset are smokers, constituting 312 out of 407 observations.
+Diet: 57.0% of individuals have a poor diet.
+Exercise: 26.3% of individuals engage in regular exercise.
+Diagnosis: 75.9% of individuals have been diagnosed with diabetes, totaling 309 out of 407 observations.
+
+```{r}
+#Descriptive Statistics for BMI
+#install.packages('descr')
+#library("descr")
+diabetes.diagnosed.cleaned %>%
+summarize(mean = mean(x = BMI, na.rm = TRUE),
+          std.dev = sd(x = BMI, na.rm = TRUE),
+          med = median(x = BMI, na.rm = TRUE),
+          mode = names(x = sort(x = table(BMI),
+          decreasing = TRUE))[1])
+
+```
+Interpretation:
+*Mean BMI: The mean BMI is approximately 32.56, indicating the average body mass index among the individuals in the dataset.
+*Standard Deviation of BMI:The standard deviation of BMI is approximately 9.73, reflecting the spread or variability of BMI values around the mean.
+*Median BMI: The median BMI is 33, which represents the middle value of the BMI distribution when arranged in ascending order.
+*Mode of BMI: The mode of BMI is 35, suggesting that the most frequently occurring BMI value in the dataset is 35.
+
+```{r}
+#Descriptive Statistics for FBS
+diabetes.diagnosed %>%
+summarize(mean = mean(x = FBS, na.rm = TRUE),
+          std.dev = sd(x = FBS, na.rm = TRUE),
+          med = median(x = FBS, na.rm = TRUE),
+          mode = names(x = sort(x = table(FBS),
+          decreasing = TRUE))[1])
+```
+Interpretation :
+*Mean: The mean fasting blood sugar (FBS) level is approximately 113.82 mg/dL.
+*Standard Deviation: The standard deviation of FBS is approximately 36.92, indicating the dispersion of FBS values around the mean.A higher standard deviation suggests that the FBS values are more spread out from the mean.
+*Median: The median FBS value is 116 mg/dL, which represents the middle value of the dataset when ordered from smallest to largest.
+*Mode: The mode of FBS is 180 mg/dL, which is the most frequently occurring value in the dataset.
+```{r}
+#Descriptive Statistics for HbA1c 
+diabetes.diagnosed %>%
+summarize(mean = mean(x = HbA1c , na.rm = TRUE),
+          std.dev = sd(x = HbA1c , na.rm = TRUE),
+          med = median(x = HbA1c , na.rm = TRUE),
+          mode = names(x = sort(x = table(HbA1c ),
+          decreasing = TRUE))[1])
+```
+Interpretation:
+*Mean: The mean HbA1c level is approximately 6.26%.
+*Standard Deviation: The standard deviation of HbA1c is approximately 1.00, indicating the dispersion of HbA1c values around the mean.
+*Median: The median HbA1c value is 6.00%, which represents the middle value of the dataset when ordered from smallest to largest.
+*Mode: The mode of HbA1c is 5.00%, which is the most frequently occurring value in the dataset.
+```{r}
+#Descriptive Statistics for Age 
+diabetes.diagnosed %>%
+summarize(mean = mean(x = Age , na.rm = TRUE),
+          std.dev = sd(x = Age , na.rm = TRUE),
+          med = median(x = Age , na.rm = TRUE),
+          mode = names(x = sort(x = table(Age ),
+          decreasing = TRUE))[1])
+```
+Interpretation:
+*Mean : The average age in the dataset is approximately 49.16 years. This provides a measure of the central tendency of the ages of the individuals in the dataset.
+*Standard Deviation : With a standard deviation of approximately 16.31, there is considerable variability or spread in the ages of the individuals around the mean. This indicates that ages in the dataset are not tightly clustered around the mean but are rather dispersed.
+*Median: The median age is 50 years, which represents the middle value of the dataset when ordered from smallest to largest. It suggests that half of the individuals in the dataset are below 50 years old and half are above.
+*Mode: The mode of age is 65 years, which is the most frequently occurring age in the dataset. However, it's important to note that the dataset may have multiple modes if there are other ages with the same frequency.
+```{r}
+#Descriptive statistics for Gender
+#install.packages('descr')
+#library(package = "descr")
+descr::freq(x = diabetes.diagnosed$Gender, plot = FALSE)
+```
+Interpretation:
+*Frequency: There are 147 females and 260 males in the dataset.
+*Percent: Females represent approximately 36.12% of the dataset, while males represent approximately 63.88%. The total percentage sums up to 100%, indicating that all individuals in the dataset have been accounted for.
+```{r}
+#Descriptive statistics for Blood Pressure
+descr::freq(x = diabetes.diagnosed$Blood.Pressure, plot = FALSE)
+```
+*Frequency:
+*There are 239 individuals with high blood pressure.
+*There are 52 individuals with low blood pressure.
+*There are 116 individuals with normal blood pressure.
+Percent:
+*High blood pressure accounts for approximately 58.72% of the dataset.
+*Low blood pressure accounts for approximately 12.78%.
+*Normal blood pressure accounts for approximately 28.50%.
+```{r}
+#Descriptive statistics for Family History of Diabetes
+descr::freq(x = diabetes.diagnosed$Family.History.of.Diabetes, plot = FALSE)
+```
+*Frequency: 
+  There are 119 individuals without a family history of diabetes.
+  There are 288 individuals with a family history of diabetes.
+*Percent: 
+  Individuals without a family history of diabetes account for approximately 29.24% of the dataset.
+  Individuals with a family history of diabetes account for approximately 70.76%.
+```{r}
+#Descriptive statistics for Smoking
+descr::freq(x = diabetes.diagnosed$Smoking, plot = FALSE)
+```
+Interpretation:
+*Frequency:
+  There are 95 individuals who do not smoke.
+  There are 312 individuals who smoke.
+*Percent:
+  Individuals who do not smoke account for approximately 23.34% of the dataset.
+  Individuals who smoke account for approximately 76.66%.
+```{r}
+#Descriptive statistics for Diet
+descr::freq(x = diabetes.diagnosed$Diet, plot = FALSE)
+```
+*Frequency:
+  There are 175 individuals with a healthy diet.
+  There are 232 individuals with a poor diet.
+*Percent:
+  Individuals with a healthy diet account for approximately 43% of the dataset.
+  Individuals with a poor diet account for approximately 57%.
+```{r}
+#Descriptive statistics for Exercise
+descr::freq(x = diabetes.diagnosed$Exercise, plot = FALSE)
+```
+Interpretation:
+*Frequency:
+  There are 107 individuals who exercise regularly.
+  There are 300 individuals who do not exercise regularly.
+*Percent:
+   Individuals who exercise regularly account for approximately 26.29% of the dataset.
+   Individuals who do not exercise regularly account for approximately 73.71%.
+
+```{r}
+#3b) Data Visualizations 
+#Histogram for Age
+diabetes.diagnosed %>%
+ggplot(aes(x = Age)) +
+geom_histogram(fill = "#7463AC", color = "white") +
+theme_minimal() +
+labs(x = "Age of people with or without Diabetes",
+y = "Counts")
+```
+
+Interpretaion:
+*The histogram exhibits a multimodal distribution, with several peaks indicating higher frequencies at certain age groups. The bar suggests that the age group around the 40s or early 60s to 70s has the highest number of individuals in this dataset, whether they have diabetes or not.
+
+*The graph implies that the incidence or prevalence of diabetes (or the population being studied) varies across different age groups, with some ages being more commonly affected or represented than others.
+
+```{r}
+#Histogram for BMI
+diabetes.diagnosed %>%
+ggplot(aes(x = BMI)) +
+geom_histogram(fill = "#7463AC", color = "white") +
+theme_minimal() +
+labs(x = "Body Mass Index",
+y = "Counts")
+```
+Interpretation:
+*The distribution has a roughly bell-shaped curve, suggesting that the data follows an approximately normal or Gaussian distribution pattern. The peak of the curve is around a BMI of 30-35, indicating that this BMI range has the highest frequency or concentration of individuals in the dataset.
+*The shape of the distribution implies that lower and higher BMI values are less common, with the frequencies tapering off on both sides of the central peak.
+```{r}
+#Histogram for Fasting Blood Sugar
+diabetes.diagnosed %>%
+ggplot(aes(x = FBS )) +
+geom_histogram(fill = "#7463AC", color = "white") +
+theme_minimal() +
+labs(x = "Fasting Blood Sugar",
+y = "Counts")
+```
+Interpretation:
+*The tallest peak is around an FBS value of 90, indicating that a significant portion of individuals in the dataset have normal or relatively low fasting blood sugar levels within the healthy range.
+*The second, smaller peak is around an FBS value of 120-150, suggesting the presence of another subset of individuals with elevated fasting blood sugar levels, potentially in the prediabetic or diabetic range.
+```{r}
+#Histogram for Glycated Hemoglobin
+diabetes.diagnosed %>%
+ggplot(aes(x = HbA1c  )) +
+geom_histogram(fill = "#7463AC", color = "white") +
+theme_minimal() +
+labs(x = "Glycated Hemoglobin",
+y = "Counts")
+```
+Interpretation:
+*The first peak is around an HbA1c value of 5, which is within the normal or healthy range, suggesting that a significant portion of the individuals in the dataset have well-controlled blood sugar levels.
+The second peak is around an HbA1c value of 7, which is considered in the diabetic range, indicating the presence of another subset of individuals with poorly controlled blood sugar levels.
+*This bimodal distribution implies that the dataset likely consists of two distinct populations – one with well-managed glycemic control and another with uncontrolled or poorly managed diabetes.
+The presence of a bimodal pattern in HbA1c levels is commonly observed in datasets that include both individuals with and without diabetes or those with varying degrees of glycemic control. It can be useful in identifying the prevalence of diabetes or prediabetes within a population and evaluating the effectiveness of diabetes management strategies.
+
+```{r}
+# Create a Bar Graph representing the proportion of males and females who have Diabetes and who have not
+diabetes.diagnosed %>%
+  ggplot(aes(x = Gender, fill = Diagnosis)) +
+  geom_bar(position = "dodge") +
+  theme_minimal() +
+  labs(x = "Gender", y = "Counts") +
+  scale_fill_manual(values = c("#7463AC", "gray80"),
+  name = "Diagnosis")
+```
+Interpretation: 
+*The graph compares the number of people who have been diagnosed with diabetes to those who haven't, separating the data by gender.
+The bars in the graph represent the following:
+*For females, the purple bar shows the count of females not diagnosed with diabetes, while the gray bar shows the count of females diagnosed with diabetes.
+*For males, the purple bar shows the count of males not diagnosed with diabetes, while the taller gray bar shows the count of males diagnosed with diabetes.
+This suggests that males have higher counts of diagonised with diabetes.
+```{r}
+# •	Create a Bar Graph representing the proportion of Family History of Diabetes who have Diabetes and who have not
+diabetes.diagnosed %>%
+  ggplot(aes(x = Family.History.of.Diabetes, fill = Diagnosis)) +
+  geom_bar(position = "dodge") +
+  theme_minimal() +
+  labs(x = "Family History of Diabetes", y = "Counts") +
+  scale_fill_manual(values = c("#7463AC", "gray80"),
+  name = "Diagnosis")
+```
+Interpretation:
+*The bars on the left represent those without a family history of diabetes. The purple bar shows the count of people without a family history but who have been diagnosed with diabetes, while the gray bar represents those without a family history and without a diabetes diagnosis.
+*The bars on the right indicate individuals with a family history of diabetes. The purple bar shows the count of people with a family history who have been diagnosed with diabetes themselves, and the taller gray bar represents those with a family history but who have not been diagnosed with diabetes.
+The graph suggests that the people with family history of diabetes has more tendency to have diabetes or have diabetes, and the people having no family history of diabetes has less tendency to have diabetes or have diabetes
+
+```{r}
+# •	Create a Bar Graph representing the proportion of Smoking who have Diabetes and who have not
+diabetes.diagnosed %>%
+  ggplot(aes(x = Smoking, fill = Diagnosis)) +
+  geom_bar(position = "dodge") +
+  theme_minimal() +
+  labs(x = "Smoking", y = "Number of participants") +
+  scale_fill_manual(values = c("#7463AC", "gray80"),
+  name = "Diagnosis")
+```
+For non-smokers (the "No" category on the x-axis), the purple bar, indicating a higher number of participants who were not diagnosed with the condition.
+For smokers (the "Yes" category on the x-axis), the gray bar is much taller than the purple bar, suggesting that a significantly higher number of participants who smoked were diagnosed with the condition compared to those who did not smoke.
+The difference in the heights of the bars between the "No" and "Yes" smoking categories is substantial, implying a strong positive association between smoking and being diagnosed with the condition.
+In summary, the graph clearly illustrates that smoking is a potential risk factor for the condition being studied, as the prevalence of the diagnosis is considerably higher among smokers compared to non-smokers in this sample.
+
+```{r}
+# •	Create a Bar Graph representing the proportion of Diet who have Diabetes and who have not
+diabetes.diagnosed %>%
+  ggplot(aes(x = Diet, fill = Diagnosis)) +
+  geom_bar(position = "dodge") +
+  theme_minimal() +
+  labs(x = "Diet", y = "Counts") +
+  scale_fill_manual(values = c("#7463AC", "gray80"),
+  name = "Diagnosis")
+```
+The bar chart displays the counts or number of participants across two categories of diet: "Healthy" and "Poor". The bars are colored based on the diagnosis status, with purple representing those not diagnosed with the condition and gray representing those diagnosed.
+For the "Healthy" diet category, the graph suggest, indicating a higher number of participants who were not diagnosed with the condition had a healthy diet.
+For the "Poor" diet category, the gray bar is much taller than the purple bar, suggesting that a significantly higher number of participants with a poor diet were diagnosed with the condition compared to those with a poor diet who were not diagnosed.
+The difference in the heights of the bars between the "Healthy" and "Poor" diet categories is substantial, implying a strong positive association between having a poor diet and being diagnosed with the condition.
+In summary, the graph clearly illustrates that diet quality is a potential risk factor for the condition being studied, as the prevalence of the diagnosis is considerably higher among participants with a poor diet compared to those with a healthy diet in this sample.
+
+```{r}
+# •	Create a Bar Graph representing the proportion of Exercise who have Diabetes and who have not
+diabetes.diagnosed %>%
+  ggplot(aes(x = Exercise , fill = Diagnosis)) +
+  geom_bar(position = "dodge") +
+  theme_minimal() +
+  labs(x = "Exercise ", y = "Counts") +
+  scale_fill_manual(values = c("#7463AC", "gray80"),
+  name = "Diagnosis")
+```
+The bar chart displays the counts or number of participants across two categories of exercise: "No" (not exercising regularly) and "Regular" (exercising regularly). The bars are colored based on the diagnosis status, with purple representing those not diagnosed with the condition and gray representing those diagnosed.
+
+For the "No" exercise category, the gray bar is taller than the purple bar, indicating that a higher number of participants who did not exercise regularly were diagnosed with the condition compared to those who did not exercise regularly and were not diagnosed.
+For the "Regular" exercise category, the purple bar and the gray bar are mostly similar by depending on the dataset. 
+The difference in the heights of the bars between the "No" and "Regular" exercise categories for the gray bars (diagnosed) is substantial, implying that regular exercise is associated with a lower prevalence of the diagnosis.
+
+In summary, the graph suggests that regular exercise is a potential protective factor against the condition being studied, as the prevalence of the diagnosis is considerably lower among participants who exercised regularly compared to those who did not exercise regularly in this sample.
+
+#############Identifying a transformation for the HbA1c variable#################################
+
+```{r}
+#Data Management
+# histograms of square root of HbA1c
+library(tidyverse)
+# cube root
+cube.root.HbA1c <- diabetes.diagnosed %>%
+ggplot(aes(x = (HbA1c)^(1/3))) +
+geom_histogram(fill = "#7463AC", col = "white") +
+labs(x = "Cube root of HbA1c", y = "Counts") +
+theme_minimal()
+
+# square root
+sq.root.HbA1c <- diabetes.diagnosed %>%
+ggplot(aes(x = sqrt(x = HbA1c))) +
+geom_histogram(fill = "#7463AC", col = "white") +
+labs(x = "Square root of HbA1c", y = "Counts")+
+theme_minimal()
+
+# inverse
+inverse.HbA1c <- diabetes.diagnosed%>%
+ggplot(aes(x = 1/HbA1c)) +
+geom_histogram(fill = "#7463AC", col = "white") +
+labs(x = "Inverse of HbA1c", y = "Counts")+
+theme_minimal()
+
+# log
+log.HbA1c <- diabetes.diagnosed %>%
+ggplot(aes(x = log(x = HbA1c))) +
+geom_histogram(fill = "#7463AC", col = "white") +
+labs(x = "Log of HbA1c", y = "")+
+theme_minimal()
+
+#install.packages('gridExtra')
+# view options for transformation
+gridExtra::grid.arrange(cube.root.HbA1c, sq.root.HbA1c,
+              inverse.HbA1c, log.HbA1c)
+```
+
+#############Identifying a transformation for the FBS variables#################################
+
+```{r}
+# histograms of square root of FBS
+library(tidyverse)
+# cube root
+cube.root.FBS <- diabetes.diagnosed %>%
+ggplot(aes(x = (FBS)^(1/3))) +
+geom_histogram(fill = "#7463AC", col = "white") +
+labs(x = "Cube root of FBS", y = "Counts") +
+theme_minimal()
+
+# square root
+sq.root.FBS <- diabetes.diagnosed %>%
+ggplot(aes(x = sqrt(x = FBS))) +
+geom_histogram(fill = "#7463AC", col = "white") +
+labs(x = "Square root of FBS", y = "Counts")+
+theme_minimal()
+
+# inverse
+inverse.FBS <- diabetes.diagnosed%>%
+ggplot(aes(x = 1/FBS)) +
+geom_histogram(fill = "#7463AC", col = "white") +
+labs(x = "Inverse of FBS", y = "Counts")+
+theme_minimal()
+
+# log
+log.FBS <- diabetes.diagnosed %>%
+ggplot(aes(x = log(x = FBS))) +
+geom_histogram(fill = "#7463AC", col = "white") +
+labs(x = "Log of FBS", y = "")+
+theme_minimal()
+
+#install.packages('gridExtra')
+# view options for transformation
+gridExtra::grid.arrange(cube.root.FBS, sq.root.FBS,
+              inverse.FBS, log.FBS)
+```
+
+
+```{r}
+# 3c •	To test the difference in mean FBS between people Diagnosed with diabetes or not
+twosampt <- t.test(formula = diabetes.diagnosed$FBS ~
+               diabetes.diagnosed$Diagnosis)
+
+twosampt
+```
+Interpretation:
+This gives the t-statistic value (-21.522) and the degrees of freedom (367.98) for the test.
+The p-value is extremely small, less than 2.2e-16. This indicates that the difference in means between the two groups is statistically significant at any reasonable significance level.Based on this output, we can conclude that there is a statistically significant difference in mean FBS levels between the non-diabetic and diabetic groups. The mean FBS level is significantly higher in the diabetic group compared to the non-diabetic group.
+
+```{r}
+# Assumption 1: the data within each of the two groups should be normally distributed. 
+library("tidyverse")
+diabetes.diagnosed %>%
+      ggplot(aes(x = FBS)) +
+      geom_histogram(fill = "#7463AC", col = "white") +
+      facet_grid(cols = vars(Diagnosis)) +
+      theme_minimal() +
+      labs(x="Fasting Blood Sugar",
+  y="Counts")
+```
+Interpretation:
+The histogram showing the distribution of fasting blood sugar levels for two groups, likely those diagnosed with diabetes ("Yes" group) and those not diagnosed ("No" group).
+For the "No" group, the distribution appears approximately normal or bell-shaped, with the majority of values clustered around 40-90 mg/dL, which is considered a normal range for fasting blood sugar.
+However, for the "Yes" group (diagnosed with diabetes), the distribution is heavily skewed to the right, with a higher concentration of values in the elevated range of 120-180 mg/dL or higher. This suggests that individuals in this group tend to have higher fasting blood sugar levels, which is a characteristic of diabetes.
+The clear separation and different shapes of the distributions for the two groups visually reinforce the statistical evidence from the t-test output provided earlier, indicating a significant difference in mean fasting blood sugar levels between those diagnosed with diabetes and those not diagnosed.
+This histogram graphically depicts the underlying data and highlights the elevated fasting blood sugar levels commonly seen in individuals with diabetes compared to those without the condition.
+
+```{r}
+#Q-Q plot for 
+diabetes.diagnosed %>%
+      ggplot(aes(sample = FBS)) +
+      stat_qq(aes(color = "FBS"), alpha = .6) +
+      facet_grid(cols = vars(Diagnosis)) +
+      geom_abline(aes(intercept = mean(x = FBS),
+      slope = sd(x = FBS), linetype = "Normally distributed"),
+      color = "gray", size = 1) +
+  theme_minimal() +
+  labs(x = "Theoretical normal distribution",
+       y = "Observed Fasting blood Sugar")+
+  scale_color_manual(values = "#7463AC", name = "") +
+  scale_linetype_manual(values = 1, name = "")
+```
+Interpretation:
+* The data within each group clearly failed the assumption of normal distribution. 
+
+#############################LEVENE'S TEST#############################
+
+* Levene’s test is widely used to test the assumption of equal variances.The null hypothesis for Levene’s test is that the variances are equal, while the alternate hypothesis is that the variances are not equal. 
+* A statistically significant Levene’s test would mean rejecting the null   hypothesis of equal variances and failing the assumption.
+
+```{r}
+# equal variances for FBS by Diagnosis
+install.packages('car')
+car::leveneTest(y = FBS ~ Diagnosis, data = diabetes.diagnosed)
+```
+Interpretation:
+* Levene’s test had a p-value of 2.2e-16, which is enough to reject the null hypothesis. 
+* Therefore, the assumption is not met. 
+* The variances of FBS for diabetes are not statistically significantly different, and the                 independent-samples t-test does not meet the assumption of homogeneity of variances.
+
+Overall, the test do not pass all assumptions.
+
+########Alternative when the independent-samples t-test normality assumption fails: The Mann-Whitney U test####
+
+NHST STEP 1: Write the null and alternate hypotheses
+
+  H0: There is no difference in ranked FBS values for Diagnosis and No Diagnosis.
+  HA: There is a difference in ranked FBS values for Diagnosis and No Diagnosis.
+
+NHST STEP 2: Compute the test statistic   
+
+This test is also called the Wilcoxon rank sum test—which is not the same as the Wilcoxon signed-ranks test
+wilcox.test() is used with use of formula =  instead of x = and y =, and use of paired = FALSE.
+
+```{r}
+# test the distribution of FBS by Diagnosis
+u.fbs.by.diagnosis <- wilcox.test(formula =
+                  diabetes.diagnosed$FBS ~
+                  diabetes.diagnosed$Diagnosis,
+                paired = FALSE)
+
+u.fbs.by.diagnosis
+```
+NHST STEP 3: Calculate the probability that your test statistic is at least as big as it is if there is no relationship (i.e., the null is true)
+The p-value is shown in scientific notation in the output as < 2.2e-16,which is well below .05.
+  
+NHST STEPS 4 and 5: Interpret the probability and write a conclusion
+
+A Mann-Whitney U test comparing FBS for Diagnosis and No Diagnosis people found a statistically significant difference between the two groups (p < .05).
+
+Effect size for Mann-Whitney U
+```{r}
+# use qnorm to find z from p-value
+qnorm(p = u.fbs.by.diagnosis$p.value)
+```
+Interpretation:
+The z-statistic was negative and large. Because effect size is about the size or strength and not the direction (positive or negative) of a relationship, the absolute value can be used to get the effect size r
+         
+  r= 11.20495/square_root(407)= 0.56
+  
+Effects of r can be classified as follows:
+
+r = .1 to r < .3 is small
+r = .3 to r < .5 is medium
+r ≥ .5 is large
+
+Consistent with the effect size from the t-test comparing Diagnosis and No Diagnosis, this is a pretty large effect size.
+
+Interpretation:
+A Mann-Whitney U test comparing FBS for Diagnosed with Diabetes or not, found a statistically significant difference between the two groups (p < .05). The effect size was large, r = 0.56, indicating a pretty large but statistically significant relationship between FBS for Diagnosed with Diabetes or not.
+
+
+########Alternative when the independent-samples t-test variance assumption fails: The Kolmogorov-Smirnov test###
+NHST STEP 1: Write the null and alternate hypotheses
+
+H0: The distribution of FBS for Diagnosis and No Diagnosis is the same
+HA: The distribution of FBS for Diagnosis and No Diagnosis is not the same
+
+NHST STEP 2: Compute the test statistic
+
+ks.test() function
+
+```{r}
+# get vectors for Diagnosis FBS
+library("tidyverse")
+Diagnosis.Yes <- diabetes.diagnosed %>%
+filter(Diagnosis == "Yes") %>%
+pull(var = FBS)
+Diagnosis.No <- diabetes.diagnosed %>%
+filter(Diagnosis == "No") %>%
+pull(var = FBS)
+```
+
+```{r}
+# conduct the test
+ks.test(x = Diagnosis.Yes, y = Diagnosis.No)
+```
+NHST STEP 3: Calculate the probability that your test statistic is at least as big as it is if there is no relationship (i.e., the null is true)
+
+The p-value is shown in scientific notation in the output as < 2.2e-16, which is well below .05.
+
+NHST STEPS 4 and 5: Interpret the probability and write a conclusion
+
+* The K-S test compared the distribution of FBS for Diagnosis and No Diagnosis and found a statistically significant difference between the two groups (D = 0.69; p < .05). 
+
+REPORT:
+A K-S test comparing FBS for Diagnosis and No Diagnosis found a statistically significant difference between the two groups  (D = 0.69; p < .05). This sample likely came from a population where the distribution of FBS was different for Diagnosis and No Diagnosis.
+#####################################################################################################
+
+####################################################
+NHST Step 1: Write the null and alternate hypotheses for the Chi- Squared test
+####################################################
+
+* Here are the null and alternate hypotheses for the Diagnosis of Diabetes data:
+  
+  H0: There is no significant association between diagnosis of diabetes and gender
+  HA: There is significant association between diagnosis of diabetes and gender
+
+#######################################
+NHST Step 2: Compute the test statistic
+#######################################
+
+The test statistic to use when examining a relationship between two categorical variables is the chi-squared statistic, χ2.
+```{r}
+# To test whether there is significant association between diagnosis of diabetes and gender
+
+chisq.test(x = diabetes.diagnosed$Diagnosis, y = diabetes.diagnosed$Gender)
+```
+The test statistic is χ2 : 46.011
+
+####################################################################
+NHST Step 3: Calculate the probability that your test statistic is at least as big as it is if there is no relationship (i.e., the null is true)
+#####################################################################
+
+The probability of seeing a chi-squared as 46.011 in our sample if there were no relationship between Diagnosis of Diabetes and Gender would be 1.176e-11 or p < .05.
+
+#####################################################################
+NHST Step 4: If the probability that the null is true is very small, usually less than 5%, reject the null hypothesis.
+####################################################################
+
+p = 1.176e-11 or p < .05.
+Hence, reject null hypothesis
+
+#####################################################################
+NHST Step 5: If the probability that the null is true is not small, usually 5% or greater, retain the null hypothesis
+#####################################################################
+
+Applicable here as p > 0.05 (i.e.,p = 0.5043)
+
+Interpretation:
+We used the chi-squared test to test the null hypothesis that there was no relationship between Diagnosis of Diabetes and Gender. We reject the null hypothesis and concluded that there was statistically significant association between Diagnosis of Diabetes and Gender [χ2 = 46.011; p < .05].
+
+
+####################################################
+NHST Step 1: Write the null and alternate hypotheses for the Chi- Squared test
+####################################################
+
+* Here are the null and alternate hypotheses for the Diagnosis of Diabetes data:
+  
+  H0: There is no significant association between diagnosis of diabetes and Diet
+  HA: There is significant association between diagnosis of diabetes and Diet
+
+#######################################
+NHST Step 2: Compute the test statistic
+#######################################
+
+The test statistic to use when examining a relationship between two categorical variables is the chi-squared statistic, χ2.
+
+```{r}
+# To test whether there is significant association between diagnosis of diabetes and diet
+
+chisq.test(x = diabetes.diagnosed$Diagnosis, y = diabetes.diagnosed$Diet)
+```
+The test statistic is χ2 :  98.409
+
+####################################################################
+NHST Step 3: Calculate the probability that your test statistic is at least as big as it is if there is no relationship (i.e., the null is true)
+#####################################################################
+The probability of seeing a chi-squared as 98.409 in our sample if there were no relationship between Diagnosis of Diabetes and Diet would be < 2.2e-16 or p < .05.
+#####################################################################
+NHST Step 4: If the probability that the null is true is very small, usually less than 5%, reject the null hypothesis.
+####################################################################
+p = < 2.2e-16 or p < .05..
+Hence, reject null hypothesis
+#####################################################################
+NHST Step 5: If the probability that the null is true is not small, usually 5% or greater, retain the null hypothesis
+#####################################################################
+Not applicable here as p < 0.05 (i.e.,p = < 2.2e-16)
+
+Interpretation:
+We used the chi-squared test to test the null hypothesis that there was no relationship between Diagnosis of Diabetes and Diet. We reject the null hypothesis and concluded that there was statistically significant association between Diagnosis of Diabetes and Diet [χ2 = 98.409; p < .05].
+
+
+####################################################
+NHST Step 1: Write the null and alternate hypotheses for the Chi- Squared test
+####################################################
+
+* Here are the null and alternate hypotheses for the Diagnosis of Diabetes data:
+  
+  H0: There is no significant association between diagnosis of diabetes and Exercise
+  HA: There is significant association between diagnosis of diabetes and Exercise
+
+#######################################
+NHST Step 2: Compute the test statistic
+#######################################
+
+The test statistic to use when examining a relationship between two categorical variables is the chi-squared statistic, χ2.
+
+```{r}
+# To test whether there is significant association between diagnosis of diabetes and Exercise
+
+chisq.test(x = diabetes.diagnosed$Diagnosis, y = diabetes.diagnosed$Exercise)
+```
+The test statistic is χ2 : 49.577
+
+####################################################################
+NHST Step 3: Calculate the probability that your test statistic is at least as big as it is if there is no relationship (i.e., the null is true)
+#####################################################################
+
+The probability of seeing a chi-squared as 49.577 in our sample if there were no relationship between Diagnosis of Diabetes and Exercise would be 1.907e-126 or p < .05.
+
+#####################################################################
+NHST Step 4: If the probability that the null is true is very small, usually less than 5%, reject the null hypothesis.
+####################################################################
+
+p = 1.907e-12 or p < .05..
+Hence, reject null hypothesis
+
+#####################################################################
+NHST Step 5: If the probability that the null is true is not small, usually 5% or greater, retain the null hypothesis
+#####################################################################
+
+Not applicable here as p < 0.05 (i.e.,p = 1.907e-12)
+
+Interpretation:
+We used the chi-squared test to test the null hypothesis that there was no relationship between Diagnosis of Diabetes and Exercise. We reject the null hypothesis and concluded that there was statistically significant association between Diagnosis of Diabetes and Exercise [χ2 = 49.577; p < .05].
+
+####################################################
+NHST Step 1: Write the null and alternate hypotheses for the Chi- Squared test
+####################################################
+
+* Here are the null and alternate hypotheses for the Diagnosis of Diabetes data:
+  
+  H0: There is no significant association between diagnosis of diabetes and Family History of Diabetes
+  HA: There is significant association between diagnosis of diabetes and Family History of Diabetes
+
+#######################################
+NHST Step 2: Compute the test statistic
+#######################################
+
+The test statistic to use when examining a relationship between two categorical variables is the chi-squared statistic, χ2.
+
+```{r}
+# To test whether there is significant association between diagnosis of diabetes and Family History
+
+chisq.test(x = diabetes.diagnosed$Diagnosis, y = diabetes.diagnosed$Family.History.of.Diabetes)
+```
+The test statistic is χ2 : 113.76
+
+####################################################################
+NHST Step 3: Calculate the probability that your test statistic is at least as big as it is if there is no relationship (i.e., the null is true)
+#####################################################################
+
+The probability of seeing a chi-squared as 113.76 in our sample if there were no relationship between Diagnosis of Diabetes and Family History of Diabetes would be < 2.2e-16 or p < .05.
+
+#####################################################################
+NHST Step 4: If the probability that the null is true is very small, usually less than 5%, reject the null hypothesis.
+####################################################################
+
+p = < 2.2e-16 or p < .05..
+Hence, reject null hypothesis
+
+#####################################################################
+NHST Step 5: If the probability that the null is true is not small, usually 5% or greater, retain the null hypothesis
+#####################################################################
+
+Not applicable here as p < 0.05 (i.e.,p = < 2.2e-16)
+
+Interpretation:
+We used the chi-squared test to test the null hypothesis that there was no relationship between Diagnosis of Diabetes and Family History of Diabetes. We reject the null hypothesis and concluded that there was statistically significant association between Diagnosis of Diabetes and Family History of Diabetes [χ2 = 113.76; p < .05].
+
+##############ASSUMPTIONS OF CHI-SQUARED TEST OF INDEPENDENCE############
+
+* There are lists of requirements that must be met before using a statistical test.
+
+3 Assumptions:
+
+Assumption 1:
+- The variables must be nominal or ordinal (usually nominal).
+  (Gender, diet, Exercise, Family History has categories that are in no particular order, so it is nominal. The Diagnosis has categories that are in no particular order, so it is also nominal. This assumption is met.)
+
+Assumption 2:
+- The expected values should be 5 or higher in at least 80% of groups.
+In this example, there are 4 groups, so 80% of this would be 3.2 groups.Since there is no way to have .2 of a group, 3 or more of the groups should have expected values of 5 or more. 
+None of the groups have expected values even close to 5; all are much higher.This assumption is met.)
+
+Assumption 3:   
+- The observations must be independent.
+(There are a couple of ways observations can be nonindependent. 
+One way to violate this assumption would be if the data included the same set of people before and after some intervention or treatment. 
+Another way to violate this assumption would be for the data to include siblings or parents and children or spouses or other people  who are somehow linked to one another. 
+Since people who are linked to each other often have similar characteristics, statistical tests on related observations need to be able to account for this, and the chi-squared test does not. 
+The Diabetes_Diagnosis data included independent observations (not siblings or other related people and not the same people measured more than once), so this assumption is met.)
+
+
+```{r}
+# chi-squared examining Diagnosis and Family History of Diabetes
+
+install.packages('descr')
+library("descr")
+CrossTable(x = diabetes.diagnosed$Diagnosis,
+           y = diabetes.diagnosed$Family.History.of.Diabetes,
+           expected = TRUE, # expected value
+           prop.c = FALSE, # default to include proportions in the column (disabling that by assigning FALSE)
+           prop.t = FALSE, # default to include proportion out of total (disabling that by assigning FALSE)
+           prop.chisq = FALSE, # default to include proportions of the chi-squared (disabling that by assigning FALSE)
+           chisq = TRUE, # chi-squared
+           sresid = TRUE) #standardized residuals
+```
+* Values of the standardized residuals that are higher than 1.96 or lower than –1.96 indicate that the observed value in that group is much higher or lower than the expected value. 
+
+Interpretation:
+
+* The standardized residuals are shown in the last row of each cell with an absolute value higher than 1.96 in 
+people not diagnosed with diabetes and having no Family history of diabetes (std. res. =  7.911) 
+people not diagnosed with diabetes and having Family history of diabetes (std. res. =  -5.085 ) 
+people diagnosed with diabetes and having no Family history of diabetes (std. res. =  -4.455 ) 
+people diagnosed with diabetes and having Family history of diabetes (std. res. =   2.864) 
+
+* The 7.911 value for people not diagnosed with diabetes and having no Family history of diabetes indicates that more people not diagnosed with diabetes and having no Family history of diabetes has more people than expected. 
+The -5.085 value for people not diagnosed with diabetes and having Family history of diabetes indicates that less people not diagnosed with diabetes and having Family history of diabetes has less people than expected. 
+The -4.455 value for people diagnosed with diabetes and having no Family history of diabetes indicates that less people diagnosed with diabetes and having no Family history of diabetes has less people than expected.
+The 2.864 value people diagnosed with diabetes and having Family history of diabetes indicates that more people diagnosed with diabetes and having Family history of diabetes has more people than expected.
+
+How to report the added interpretation from above??????
+
+We used the chi-squared test to test the null hypothesis that there was no relationship between Diagnosis by Family History of Diabetes. We rejected the null hypothesis and concluded that there was a statistically significant association between views on Diagnosis by Family History of Diabetes [χ2(3) = 113.7565 ; p < .05]. Based  on standardized residuals, the statistically significant chi-squared  test result was driven by more people not diagnosed with diabetes and having no Family history of diabetes and people diagnosed with diabetes and having Family history of diabetes.
+
+
+```{r}
+# chi-squared examining Diagnosis and Diet
+
+install.packages('descr')
+library("descr")
+CrossTable(x = diabetes.diagnosed$Diagnosis,
+           y = diabetes.diagnosed$Diet,
+           expected = TRUE, # expected value
+           prop.c = FALSE, # default to include proportions in the column (disabling that by assigning FALSE)
+           prop.t = FALSE, # default to include proportion out of total (disabling that by assigning FALSE)
+           prop.chisq = FALSE, # default to include proportions of the chi-squared (disabling that by assigning FALSE)
+           chisq = TRUE, # chi-squared
+           sresid = TRUE) #standardized residuals
+```
+There is a statistically significant association between diabetes diagnosis and diet. The extremely small p-value (< 2e-16) from the chi-squared test provides strong evidence to reject the null hypothesis of no association between these two variables.
+The standardized residuals give an idea about the nature of this association:
+
+For individuals with no diabetes diagnosis, the positive standardized residual (6.603) indicates that the observed frequency of having a healthy diet is higher than expected under the null hypothesis of no association.
+For individuals with no diabetes diagnosis, the negative standardized residual (-5.735) indicates that the observed frequency of having a poor diet is lower than expected under the null hypothesis.
+For individuals with a diabetes diagnosis, the negative standardized residual (-3.719) indicates that the observed frequency of having a healthy diet is lower than expected under the null hypothesis.
+For individuals with a diabetes diagnosis, the positive standardized residual (3.230) indicates that the observed frequency of having a poor diet is higher than expected under the null hypothesis.
+
+Based on these residuals, the results suggest that individuals with a healthy diet are less likely to be diagnosed with diabetes, while individuals with a poor diet are more likely to be diagnosed with diabetes.
+In other words, the data provides evidence that diet (healthy vs. poor) is associated with the likelihood of being diagnosed with diabetes. A poor diet appears to increase the risk of being diagnosed with diabetes, while a healthy diet appears to lower the risk.
+In summary, the chi-squared test results indicate a significant relationship between diabetes diagnosis and diet, with a poor diet being associated with a higher likelihood of being diagnosed with diabetes, and a healthy diet being associated with a lower likelihood of being diagnosed with diabetes.
+
+
+###############Two-way ANOVA test#############
+
+```{r}
+# Graph FBS by Diet and Family.History.of.Diabetes
+
+library(package = "tidyverse")
+diabetes.diagnosed %>%
+      ggplot(aes(y = FBS, x = Diet)) +
+      geom_boxplot(aes(fill = Family.History.of.Diabetes), alpha = .4) +
+      scale_fill_manual(values = c("gray70", "#7463AC")) +
+      theme_minimal() +
+      labs(x = "Diet",
+           y = "Fasting Blood Sugar")
+```
+Interpretation:
+
+For individuals with a healthy diet, the fasting blood sugar levels appear to be generally lower, as indicated by the lower position of the box plots. Additionally, the difference between those with and without a family history of diabetes is relatively small for this group, suggesting that a healthy diet may help mitigate the effect of genetic predisposition.
+In contrast, for individuals with a poor diet, the fasting blood sugar levels are noticeably higher overall, as indicated by the higher position of the box plots. Furthermore, there is a more pronounced difference between those with and without a family history of diabetes. This suggests that a poor diet, combined with a genetic predisposition, can lead to significantly higher fasting blood sugar levels, which is a risk factor for developing diabetes.
+The box plot visualizes the interplay between diet, family history, and fasting blood sugar levels. It highlights the importance of maintaining a healthy diet, especially for individuals with a family history of diabetes, as it may help regulate blood sugar levels and potentially reduce the risk or manage the condition more effectively.
+Overall, the image suggests that while genetic factors play a role, lifestyle factors like diet can have a substantial impact on fasting blood sugar levels and potentially influence the development or management of diabetes.
+
+
+#########################################################################33333333
+NHST Step 1: Write the null and alternate hypotheses
+
+  H0: The mean FBS is the same across groups of Diet and Family History of Diabetes groups. 
+  HA: The mean FBS is not the same across groups of Diet and Family History of Diabetes groups. 
+  
+NHST Step 2: Compute the test statistic
+```{r}
+# Two- Way Annova to test the mean of FBS is the same across groups of Diet and Family History of Diabetes.
+
+FBS.diet.family.history <- aov(formula = FBS ~ Diet * Family.History.of.Diabetes,
+                      data = diabetes.diagnosed)
+summary(object = FBS.diet.family.history)
+```
+Interpretation:
+
+NHST Step 3: Calculate the probability that your test statistic is at least as big as it is if there is no relationship (i.e., the null is true)
+  The p-value in this case was 0.00122 
+
+NHST Steps 4 and 5: Interpret the probability and write a conclusion
+
+Main effect of Diet:
+F-value = 274.47, p-value < 2e-16 (extremely small)
+The p-value is highly significant, indicating strong evidence that the mean FBS levels differ across the levels of Diet (e.g., healthy vs. poor diet).
+
+Main effect of Family History of Diabetes:
+F-value = 51.95, p-value = 2.83e-12
+The p-value is also highly significant, suggesting that the mean FBS levels differ between individuals with and without a family history of diabetes.
+
+Interaction effect between Diet and Family History of Diabetes:
+F-value = 10.62, p-value = 0.00122
+
+There was a statistically significant interaction between Diet and Family History of Diabetes on mean of Fasting Blood Sugar [F = 10.62; p < .001].
+
+The significance of the interaction effect means that the impact of Diet on FBS levels is different for individuals with and without a family history of diabetes, or alternatively, the impact of Family History of Diabetes on FBS levels varies across different levels of Diet.  
+  
+Post hoc test for two-way ANOVA Tukey's HSD is available.
+* To determine which groups have statistically significantly different mean Fasting Blood Sugar(FBS).
+
+```{r}
+#Tukey’s HSD post hoc test 
+TukeyHSD(x = FBS.diet.family.history)
+```
+Interpretation:
+The Tukey's HSD test results suggest the following:
+
+Main Effect of Diet:
+The mean Fasting Blood Sugar (FBS) level is significantly higher in the "Poor" diet group compared to the "Healthy" diet group, regardless of family history of diabetes.
+The estimated mean difference in FBS between the "Poor" and "Healthy" diet groups is 45.35756, with a 95% confidence interval of (39.97539, 50.73974).
+
+Main Effect of Family History of Diabetes:
+The mean FBS level is significantly higher in the group with a family history of diabetes ("Yes") compared to the group without a family history of diabetes ("No").
+The estimated mean difference in FBS between the "Yes" and "No" groups for family history of diabetes is 19.11039, with a 95% confidence interval of (13.25236, 24.96841).
+
+Interaction Effect of Diet and Family History of Diabetes:
+There is a significant interaction effect between diet and family history of diabetes on FBS levels.
+Within the group without a family history of diabetes ("No"), the "Poor" diet group has significantly higher mean FBS compared to the "Healthy" diet group.
+The estimated mean difference is 18.200579, with a 95% confidence interval of (2.551184, 33.84997).
+
+Within the group with a family history of diabetes ("Yes"), the "Poor" diet group also has significantly higher mean FBS compared to the "Healthy" diet group.
+The estimated mean difference is 57.332394, with a 95% confidence interval of (48.519618, 66.14517).
+
+The difference in mean FBS between the "Poor" diet group with a family history of diabetes ("Poor:Yes") and the "Healthy" diet group without a family history of diabetes ("Healthy:No") is the largest, with an estimated mean difference of 57.332394.
+
+The difference in mean FBS between the "Healthy" diet group with a family history of diabetes ("Healthy:Yes") and the "Healthy" diet group without a family history of diabetes ("Healthy:No") is also significant, with an estimated mean difference of 16.196827.
+
+In summary, the Tukey's HSD test results indicate that both diet and family history of diabetes have significant main effects on Fasting Blood Sugar levels, and there is also a significant interaction effect between these two factors. The "Poor" diet group and the group with a family history of diabetes generally have higher mean FBS levels, with the highest levels observed in the "Poor" diet group with a family history of diabetes.
+
+
+###############################Two-way ANOVA assumptions##############
+
+* The assumptions of homogeneity of variances and normality are also applicable in two-way ANOVA. 
+* Instead of checking normality one group at a time when there are a large number of groups in an ANOVA model, this assumption can be checked by examining the residuals. 
+* The residuals are the distances between the value of the outcome for each person and the value of the group mean for that person. 
+* When the residuals are normally distributed, this indicates that the values in each group are normally distributed around the group mean.
+
+Test Normality
+* Shapiro-Wilk test to check the normality of the residuals statistically
+
+```{r}
+# statistical test of normality for groups
+shapiro.test(x = FBS.diet.family.history$residuals)
+```
+Interpretation:
+* The null hypothesis for the Shapiro-Wilk test is that the distribution is normal. 
+* By rejecting this null hypothesis with a tiny p-value, the assumption is failed. 
+* So, this test shows that the residuals fail the normality assumption.
+
+Next, graphing the residuals to confirm.
+* The ggplot() command doest not work with the ANOVA object, so converting the residuals to a new data frame first and then graph them.
+
+```{r}
+# make a data frame
+FBS.diet.family <- data.frame(FBS.diet.family.history$residuals)
+
+# plot the residuals (Figure 7.21)
+FBS.diet.family %>%
+ggplot(aes(x = FBS.diet.family.history.residuals)) +
+geom_histogram(fill = "#7463AC", col = "white") +
+theme_minimal() +
+labs(x = "Residuals", y = "Number of observations")
+```
+Interpretation:
+* The residuals did not appear to be normally distributed. 
+
+#########Testing the homogeneity of variances assumption#####
+```{r}
+# Levene test for ANOVA
+car::leveneTest(y = FBS ~ Diet*Family.History.of.Diabetes, center = mean,
+                data = diabetes.diagnosed)
+```
+Interpretation:
+* The results were statistically significant so the null hypothesis was rejected. 
+* The equal variances assumption was not met. 
+* The two-way ANOVA had failed its assumptions.
+
+###############Alternatives when two-way ANOVA assumptions fail########
+
+* Using a Friedman test when two-way ANOVA assumptions fail
+* Creating a new data frame of summary data from the FBS, Diet, and Family History of Diabetes variables.
+
+```{r}
+# Friedman two-way ANOVA for ranked data
+# R command requires summary data
+diabetes.diagnosed.new <- diabetes.diagnosed %>%
+                group_by(Diet, Family.History.of.Diabetes) %>%
+summarize(m.fbs = mean(x = FBS))
+
+diabetes.diagnosed.new
+```
+
+```{r}
+# Friedman test
+
+fbs.diet.fam.his <- friedman.test(formula = m.fbs ~ Diet | Family.History.of.Diabetes,
+                      data = diabetes.diagnosed.new)
+fbs.diet.fam.his
+```
+Interpretation:
+* The Friedman test found no statistically significant difference in FBS use by diet and Family History of Diabetes [χ2 = 2; p = 0.16].
+
+Instead of using Friedman, another suggested method is to compute the ranks of the outcome variable and conduct the two-way ANOVA on the ranked outcome variable. 
+
+```{r}
+#mutate is used to calculate the rank of the variable FBS
+diabetes.diagnosed.rank <- diabetes.diagnosed %>%
+  mutate(FBS.rank = rank(x = FBS, na.last = "keep"))
+```
+
+```{r}
+#two-way ANOVA ranked FBS  by Diet and Family History of Diabetes
+
+FBS.Diet.Family.Rank <- aov(formula = FBS.rank ~ Diet * Family.History.of.Diabetes,
+                          data = diabetes.diagnosed.rank)
+summary(object = FBS.Diet.Family.Rank)
+```
+Final Interpretation:
+    A two-way ANOVA with ranked FBS as the outcome found a statistically significant interaction between Diet and Family History of Diabetes (p < .05).The overall pattern of results indicates that Diet and Family History of Diabetes has an impact on the diagnosis of diabetes.
+    
+###########Inferential statistical test for Pearson’s r correlation coefficient#########
+
+```{r}
+# To test whether there is a positive or negative correlation between HbA1c and FBS
+diabetes.diagnosed %>%
+  summarize(cor.glycated.haemoglobin.FBS = cor(x = HbA1c ,
+                                    y = FBS,
+use = "complete"))
+```
+The Pearson’s product-moment correlation coefficient demonstrated that the HbA1c is positively correlated with the FBS  (r = 0.88). Essentially, as HbA1cr goes up, FBS also increases.
+
+################Conducting an inferential statistical test for Pearson’s r correlation coefficient##################
+
+NHST Step 1: Writing the null and alternate hypotheses
+
+ H0: There is no relationship between the two variables (r = 0).
+ HA: There is a relationship between the two variables (r ≠ 0).
+  
+NHST Step 2: Computing the test statistic
+
+How to compute the t-statistic with code using cor.test() with the two variables as the two arguments.
+
+```{r}
+# test for correlation coefficient
+cor.test(x = diabetes.diagnosed$HbA1c,
+         y = diabetes.diagnosed$FBS)
+```
+
+NHST Step 3: Calculate the probability that your test statistic is at least as big as it is if there is no relationship (i.e., the null is true)
+
+p-value was found to be less than p-value < 2.2e-16.
+
+NHST Steps 4 and 5: Interpret the probability and write a conclusion
+
+* The p-value was very tiny, well under .05. 
+* This p-value is the probability that the very strong positive relationship (r = .88) observed between HbA1c and FBS. 
+
+Final Interpretation:
+
+The high HbA1c is statistically significantly, positively,and very strongly correlated with high FBS [r = .88; t = 37.53; p < .05]. As the HbA1c goes up, the FBS also goes up. While the correlation is .88 in the sample, it is likely between .86 and .90 in the population.
+
+```{r}
+# Scatter Plot Glycated Haemoglobin and Fasting Blood Sugar
+library(tidyverse)
+diabetes.diagnosed %>%
+ggplot(aes(x = FBS, y = HbA1c, group = Diagnosis)) +
+      geom_point(aes(color = Diagnosis), alpha = .8, size = 2) +
+      theme_minimal() +
+scale_color_manual(values = c("dodgerblue2", "deeppink"),
+                   name = "Diagnosis") +
+ylab("Glycated Haemoglobin") +
+xlab("Fasting Blood Sugar") +
+scale_linetype_manual(values = c(1, 2),
+        name = "Diagnosis")
+```
+Interpretation:
+There is a clear separation between the blue dots (not diagnosed) and the pink dots (diagnosed) along the y-axis, which represents the glycated hemoglobin.
+The majority of blue dots are concentrated in the lower range of the y-axis, suggesting that individuals with lower glycated hemoglobin levels are less likely to be diagnosed with the condition.
+On the other hand, the pink dots are more spread out and extend to higher values on the y-axis, indicating that individuals with higher glycated hemoglobin levels are more likely to be diagnosed with the condition.
+There appears to be some overlap between the blue and pink dots in the middle range of the y-axis, suggesting that there may be other factors influencing the diagnosis beyond just glycated hemoglobin levels.
+
+Overall, the scatter plot strongly suggests a positive correlation between glycated hemoglobin and the diagnosis of the condition being studied. Higher blood sugar levels are associated with an increased likelihood of being diagnosed, which aligns with the expectation for a condition like diabetes.
+
+################Checking assumptions for Pearson’s r correlation analyses##########################################
+
+The correlation coefficients rely on several assumptions:
+* Observations are independent 
+* Both variables are continuous 
+* Both variables are normally distributed.
+* The relationship between the two variables is linear (linearity).
+* The variance is constant with the points distributed equally   around the line (homoscedasticity).
+
+Checking the above assumptions:
+ASSUMPTION 1: Observations are independent.
+
+* Meeting this assumption relies on each observation being unrelated to the other observations. 
+* Countries that are geographically close to each other, or that are in the same geographic region, may be more likely to share characteristics and therefore fail this assumption. 
+* Education seemed like a characteristic that might be similar within geographic regions, so countries within those regions would not be independent. 
+* It is also skeptical that the countries in the sample were truly representative of all the countries in the world. 
+* The countries in the analysis were those reporting data on the variables of interest, rather than a random sample of countries. 
+* Countries reporting data may be different from countries missing data. 
+* For example, they may have better computing infrastructure and more human and financial resources to afford to collect, store, and report data. 
+* These data did not seem to meet the independence assumption or represent all countries.
+
+ASSUMPTION 2: Both variables are continuous 
+The assumption is met.
+
+ASSUMPTION 3: Both variables are normally distributed.
+              - Using histograms to check the normality assumption. 
+```{r}
+# check normality of HbA1c variable 
+diabetes.diagnosed %>%
+      ggplot(aes(x = HbA1c)) +
+      geom_histogram(fill = "#7463AC", col = "white") +
+      theme_minimal() +
+      labs(x = "Glycated Haemoglobin",
+           y = "Counts")
+```
+Interpretation:
+* The values of the HbA1c variable do not appear to be normally distributed. 
+
+```{r}
+# check normality of FBS variable 
+diabetes.diagnosed %>%
+      ggplot(aes(x = FBS)) +
+      geom_histogram(fill = "#7463AC", col = "white") +
+      theme_minimal() +
+      labs(x = "Fasting Blood Sugar",
+           y = "Counts")
+```
+Interpretation:
+* The values of the FBS variable do not appear to be normally distributed.
+The data had failed the normality assumption. 
+
+ASSUMPTION 4: The relationship between the two variables is linear (linearity).
+
+- The linearity assumption requires that the relationship between the two variables falls along a line. 
+- The assumption is met if a scatterplot of the two variables shows that the relationship falls along a line
+- When graphed, the points fell generally along the straight line without any major issues. 
+- If it is difficult to tell, a Loess curve can be added to confirm linearity.
+- A Loess curve shows the relationship between the two variables without constraining the line to be straight like the linear model method = lm option does.
+
+NOTE:
+* Only things that are in aes() can be added to a legend in ggplot().
+* The reason for using the name of the line instead of the  actual color with the color = argument was so that the name of the line would appear in the legend.
+
+```{r}
+# Glycated Haemoglobin and Fasting Blood Sugar graph with linear fit line and Loess curve 
+library("tidyverse")
+diabetes.diagnosed %>%
+    ggplot(aes(y = HbA1c, x = FBS)) +
+geom_point(color = "#7463AC", alpha = .6) +
+geom_smooth(aes(color = "Linear fit line"), method = "lm", se = FALSE) +
+geom_smooth(aes(color = "Loess curve"), se = FALSE) +
+theme_minimal() +
+labs(y = "Glycated Haemoglobin",  
+     x = "Fasting Blood Sugar") +
+scale_color_manual(values = c("gray60", "deeppink"), name= "") +
+scale_size_manual(values = 2, name = "")
+
+```
+
+Interpretation:
+* The Loess curve shows deviation from linear,overall the relationship do not seem close to linear. This assumption appears to be not met.
+
+ASSUMPTION 5: The variance is constant with the points distributed equally around the line (homoscedasticity).
+
+* The Breusch-Pagan test could be used to test the null hypothesis that the variance is constant around the line. 
+* The Breusch-Pagan test relies on the chi-squared distribution, and the bptest() function can be found in the lmtest package.
+
+```{r}
+# Breusch-Pagan test for constant variance
+#install.packages('lmtest')
+
+testVar <- lmtest::bptest(formula = diabetes.diagnosed$HbA1c ~ diabetes.diagnosed$FBS)
+testVar
+```
+Interpretation:
+* The Breusch-Pagan test statistic has a p-value (BP = 16.517; p = 4.821e-05), indicating that the null hypothesis that the variance is constant is rejected. 
+* When the null hypothesis that the variance is constant is rejected, the assumption of constant variance is not met. 
+
+##########Interpreting the assumption checking results#######
+
+- In all, the correlation analysis for HbA1c and FBS met one assumption.
+- It failed the assumption of normally distributed variables,linearity assumption and the assumption of homoscedasticity, but it met the variable type assumption. 
+
+#############Transforming the variables as an alternative when Pearson’s r correlation assumptions are not met########
+
+```{r}
+# create new variables
+diabetes.diagnosed.new <- diabetes.diagnosed %>%
+mutate(logit.HbA1c = log(x = (HbA1c/100)/(1-HbA1c/100))) %>%
+mutate(logit.FBS = log(x = (FBS/100)/(1-FBS/100))) %>%
+mutate(arcsin.HbA1c = asin(x = sqrt(HbA1c/100))) %>%
+mutate(arcsin.FBS= asin(x = sqrt(FBS/100)))
+```
+
+```{r}
+# check the data
+summary(diabetes.diagnosed.new)
+```
+
+
+```{r}
+# use Tukey transformation to get power for transforming
+# FBS variable to more normal distribution
+install.packages('rcompanion')
+library("rcompanion")
+p.FBS <- rcompanion::transformTukey(x = diabetes.diagnosed$FBS,
+                    plotit = FALSE,
+                    quiet = TRUE,
+                    returnLambda = TRUE)
+
+p.FBS
+```
+
+
+```{r}
+# use Tukey transformation to get power for transforming
+# HbA1c variable to more normal distribution
+p.HbA1c <- rcompanion::transformTukey(x = diabetes.diagnosed$HbA1c,
+                        plotit = FALSE,
+                        quiet = TRUE,
+                        returnLambda = TRUE)
+p.HbA1c
+```
+Transforming code to remove the logit transformation and add the folded power transformations.
+
+```{r}
+# create new transformation variables
+library("tidyverse")
+diabetes.diagnosed.new <- diabetes.diagnosed %>%
+            mutate(arcsin.FBS = asin(x = sqrt(FBS/100))) %>%
+            mutate(arcsin.HbA1c = asin(x = sqrt(HbA1c/100))) %>%
+            mutate(folded.FBS =    (FBS/100)^(1/p.FBS) - (1-FBS/100)^(1/p.FBS)) %>%
+            mutate(folded.HbA1c = (HbA1c/100)^(1/p.HbA1c) - (1-HbA1c/100)^(1/p.HbA1c))
+```
+NEXT STEP would be to check the assumption of normality to see how the transformations worked. 
+
+```{r}
+# histogram of arcsin FBS
+diabetes.diagnosed.new %>%
+  ggplot(aes(x = arcsin.FBS)) +
+  geom_histogram(fill = "#7463AC", color = "white") +
+  theme_minimal() +
+  labs(x = "Arcsine transformation of FBS",
+       y = "Counts")
+```
+
+Interpretation:
+* Better but seemed skewed.
+
+```{r}
+# histogram of folded power FBS
+diabetes.diagnosed.new %>%
+      ggplot(aes(x = folded.FBS)) +
+      geom_histogram(fill = "#7463AC", color = "white") +
+      theme_minimal() +
+      labs(x = "Folded power transformation FBS",
+           y = "Counts")
+```
+Interpretation:
+* It seemed skewed.
+
+```{r}
+# histogram of arcsine of HbA1c 
+diabetes.diagnosed.new %>%
+      ggplot(aes(x = arcsin.HbA1c)) +
+      geom_histogram(fill = "#7463AC", color = "white") +
+      theme_minimal() +
+      labs(x = "Arcsine HbA1c", y = "Counts")
+```
+Interpretation:
+* Nearly same as the original.
+
+```{r}
+#histogram of folded power transformed Glycated Haemoglobin 
+diabetes.diagnosed.new %>%
+    ggplot(aes(x = folded.HbA1c)) +
+    geom_histogram(fill = "#7463AC", color = "white") +
+    theme_minimal() +
+    labs(x = "Folded power transformed Glycated Haemoglobin",
+         y = "Counts")
+```
+Interpretation:
+* The folded power transformation for Glycated Haemoglobin was also terrible.
+
+NEXT,
+Use the same NHST process for the transformed variables as for the original variables
+
+NHST Step 1: Write the null and alternate hypotheses
+  H0: There is no correlation between the transformed values of HbA1c and FBS.
+  HA: There is a correlation between the transformed values of of HbA1c and FBS.
+
+NHST Step 2: Compute the test statistic
+
+
+```{r}
+# correlation test for transformed variables
+cor.test(diabetes.diagnosed.new$arcsin.HbA1c,
+         diabetes.diagnosed.new$arcsin.FBS)
+```
+Interpretation:
+* The test statistic is t = 3.9309 for the correlation of r = 0.27 between the two transformed variables.
+
+NHST Step 3: Calculate the probability that your test statistic is at least as big as it is if there is no                     relationship (i.e., the null is true)
+
+- The p-value shown in the output of cor.test() is tiny. 
+- The probability that the t-statistic would be 3.9309 or larger if there were no relationship is very tiny, nearly zero.
+
+NHST Steps 4 and 5: Interpret the probability and write a conclusion
+
+Reject the null hypothesis.
+
+FINAL INTERPRETATION
+ There was a statistically significant relationship between the transformed variables for HbA1c and with FBS. The relationship was weakly positive (r = 0.27). As the HbA1c goes up, the FBS also goes up. The correlation is 0.27 in the sample, and the 95% confidence interval shows that it is likely between 0.14 and 0.39 in the sampled population.
+
+
+#################Using Spearman’s rho as an alternative when Pearson’s r correlation assumptions are not met##################
+
+```{r}
+# spearman correlation HbA1c and FBS
+spear.HbA1c.FBS <- cor.test(x = diabetes.diagnosed$HbA1c,
+                            y = diabetes.diagnosed$FBS,
+                   method = "spearman")
+spear.HbA1c.FBS
+```
+Interpretation:
+* While Pearson’s r between HbA1c and FBS was 0.88, rs was slightly lower at 0.82.
+
+NHST Step 3: Calculate the probability that your test statistic is at least as big as it is if there is no relationship (i.e., the null is true)
+
+The p-value is < 2.2e-16 in the output for the Spearman analysis.
+
+NHST Steps 4 and 5: Interpret the probability and write a conclusion
+
+Null hypothesis is rejected.
+
+FINAL INTERPRETATION:
+There was a statistically significant positive correlation between HbA1c and FBS (rs = 0.82; p < .001). As the  HbA1c increases, so does the FBS.
+
+
+```{r}
+#(3e)cohen’s d effect size for independent sample test to test the difference in mean FBS between people Diagnosed with diabetes or not
+#install.packages('lsr')
+library(package = "lsr")
+
+lsr::cohensD(x = FBS ~ Diagnosis,
+      data = diabetes.diagnosed,
+      method = "unequal")
+```
+Classification of values based on Cohen's d:
+* Cohen’s d = .2 to d < .5 is a small effect size
+* Cohen’s d = .5 to d < .8 is a medium effect size
+* Cohen’s d ≥ .8 is a large effect size
+
+Interpretation: 
+ The effect size for the relationship between FBS and Diagnosis with Diabetes was large (Cohen’s d = 1.8).
+
+```{r}
+# compute Cramér’s V for between diagnosis of diabetes and gender
+library(package = "lsr")
+cramersV(x = diabetes.diagnosed$Diagnosis, y = diabetes.diagnosed$Gender)
+
+```
+* Small or weak effect size for V = .1
+* Medium or moderate effect size for V = .3
+* Large or strong effect size for V = .5
+
+In this case, the effect size is between small and medium. 
+
+Interpretation:
+There is a statistically significant relationship between Diagnosis of diabetes and Gender, and the relationship is moderate to strong. 
+
+```{r}
+# compute Cramér’s V for between diagnosis of diabetes and Diet
+#library(package = "lsr")
+cramersV(x = diabetes.diagnosed$Diagnosis, y = diabetes.diagnosed$Diet )
+
+```
+Interpretation:
+There is a statistically significant relationship between Diagnosis and Diet and the relationship is moderate and strong. 
+
+```{r}
+# compute Cramér’s V for between diagnosis of diabetes and Exercise 
+#library(package = "lsr")
+cramersV(x = diabetes.diagnosed$Diagnosis, y = diabetes.diagnosed$Exercise )
+
+```
+Interpretation:
+There is a statistically significant relationship between Diagnosis and Exercise and the relationship is moderate and strong.  
+
+```{r}
+# compute Cramér’s V for between diagnosis of diabetes and Family History 
+#library(package = "lsr")
+cramersV(x = diabetes.diagnosed$Diagnosis, y = diabetes.diagnosed$Family.History.of.Diabetes)
+
+```
+In this case, the effect size is large. 
+
+Interpretation:
+There is a statistically significant relationship between Diagnosis and Family History of Diabetes and the effect size is large.
+
+```{r}
+
+# Effect Size and interpretation for the Two Way Anova
+install.packages('effectsize')
+library(effectsize)
+omega_squared <- omega_squared(FBS.diet.family.history)
+print(omega_squared)
+```
+Omega2 (partial): This column shows the partial omega-squared effect size estimates for each term.
+95% CI: This column displays the 95% confidence intervals for the partial omega-squared effect size estimates.
+Based on the output, you can interpret the effect sizes as follows:
+
+The main effect of Diet has the largest partial omega-squared effect size (0.40), indicating that it accounts for a substantial proportion of the variance in Fasting Blood Sugar, even after accounting for the other factors.
+The main effect of Family.History.of.Diabetes has a smaller but still notable partial omega-squared effect size (0.11), suggesting it also contributes to explaining the variance in Fasting Blood Sugar.
+The interaction effect between Diet and Family.History.of.Diabetes has a small partial omega-squared effect size (0.02), indicating that it accounts for a relatively small proportion of the variance in Fasting Blood Sugar.
+
+
+```{r}
+#3f) Specify the appropriate model (linear/logistic) you plan to run
+#colnames(libraries.cleaned)
+# get a table of descriptive statistics with bivariate tests
+library(package = "tableone")
+
+table.desc <- CreateTableOne(data = diabetes.diagnosed,
+                            strata = 'Diagnosis',
+                            vars = c("Age", "FBS", "HbA1c", "Gender", "Smoking",
+                                      "Diet", "Exercise","Family.History.of.Diabetes"))
+```
+
+```{r}
+print(table.desc, nonnormal = 'age',showAllLevels = TRUE)
+```
+Interpretation:
+It compares the characteristics of individuals who were diagnosed with diabetes (Diagnosis = "Yes") with those who were not diagnosed (Diagnosis = "No").
+
+Sample size:
+The sample size for the "No" diagnosis group is 98.
+The sample size for the "Yes" diagnosis group is 309.
+
+Age:
+For the "No" diagnosis group, the mean age is 45.37 years with a standard deviation of 17.46 years.
+For the "Yes" diagnosis group, the mean age is 50.36 years with a standard deviation of 15.77 years.
+The p-value of 0.008 indicates that the difference in mean age between the two groups is statistically significant.
+
+FBS (Fasting Blood Sugar):
+For the "No" diagnosis group, the mean FBS is 78.84 with a standard deviation of 6.84.
+For the "Yes" diagnosis group, the mean FBS is 124.92 with a standard deviation of 35.62.
+The p-value of <0.001 indicates that the difference in mean FBS between the two groups is statistically significant.
+
+Gender:
+In the "No" diagnosis group, 65.3% are females, and 34.7% are males.
+In the "Yes" diagnosis group, 26.9% are females, and 73.1% are males.
+The p-value of <0.001 indicates that the difference in gender distribution between the two groups is statistically significant.
+
+Smoking:
+In the "No" diagnosis group, 70.4% are non-smokers, and 29.6% are smokers.
+In the "Yes" diagnosis group, 8.4% are non-smokers, and 91.6% are smokers.
+The p-value of <0.001 indicates that the difference in smoking status distribution between the two groups is statistically significant.
+
+Diet:
+In the "No" diagnosis group, 86.7% have a healthy diet, and 13.3% have a poor diet.
+In the "Yes" diagnosis group, 29.1% have a healthy diet, and 70.9% have a poor diet.
+The p-value of <0.001 indicates that the difference in diet distribution between the two groups is statistically significant.
+
+Exercise:
+In the "No" diagnosis group, 45.9% do not exercise regularly, and 54.1% exercise regularly.
+In the "Yes" diagnosis group, 82.5% do not exercise regularly, and 17.5% exercise regularly.
+The p-value of <0.001 indicates that the difference in exercise status distribution between the two groups is statistically significant.
+
+Family History of Diabetes:
+In the "No" diagnosis group, 72.4% do not have a family history of diabetes, and 27.6% have a family history of diabetes.
+In the "Yes" diagnosis group, 15.5% do not have a family history of diabetes, and 84.5% have a family history of diabetes.
+The p-value of <0.001 indicates that the difference in family history of diabetes distribution between the two groups is statistically significant.
+
+```{r}
+# checking the order of the outcome variable categories
+levels(as.factor(x = diabetes.diagnosed$Diagnosis))
+```
+
+```{r}
+#estimate the Diagnosis of Diabetes model and print results
+library("tidyverse")
+
+diabetes.diagnosed.cleaned <- diabetes.diagnosed %>%
+ select(Age, Gender, HbA1c, Family.History.of.Diabetes, Smoking,Diet,Exercise, Diagnosis) %>%
+ mutate(Family_History = factor(x = dplyr::recode(.x = Family.History.of.Diabetes,
+ `1` = "Yes",
+ `2` = "No"))) %>%
+ mutate(Gender = factor(x = dplyr::recode(.x = Gender,
+ `1` = "Male",
+ `2` = "Female"))) %>%
+  mutate(Smoking_new = factor(x = dplyr::recode(.x = Smoking,
+ `1` = "Yes",
+ `2` = "No"))) %>%
+  mutate(Diet_new = factor(x = dplyr::recode(.x = Diet,
+ `1` = "Healthy",
+ `2` = "Poor"))) %>%
+   mutate(Exercise_new = factor(x = dplyr::recode(.x = Exercise,
+ `1` = "Regular",
+ `2` = "No"))) %>%
+ mutate(Diagnosis.new = factor(x = dplyr::recode(.x = Diagnosis,
+ `1` = "Yes",
+ `2` = "No")))
+
+#str(diabetes.diagnosed.cleaned)
+
+```
+
+
+```{r}
+
+lib.model.small <- glm(formula = Diagnosis.new ~ Age + Gender+ Family_History+ Exercise_new,
+                 data = diabetes.diagnosed.cleaned,
+                 family = binomial("logit"))
+```
+
+
+```{r}
+summary(lib.model.small)
+```
+Coefficients:The coefficients represent the log-odds ratios for each predictor variable.
+
+The intercept (-1.61257) represents the log-odds of being diagnosed with diabetes when all predictor variables are zero or at their reference levels.
+
+Age has a positive coefficient (0.01058), suggesting that higher age is associated with higher odds of being diagnosed with diabetes, although this effect is not statistically significant (p-value = 0.29265).
+GenderMale has a positive coefficient (2.27319), which is highly significant (p-value = 9.72e-11). This indicates that males have higher odds of being diagnosed with diabetes compared to females (the reference level).
+Family_HistoryYes also has a positive and highly significant coefficient (2.39988), suggesting that having a family history of diabetes increases the odds of being diagnosed.
+Exercise_newRegular has a negative coefficient (-1.09923), which is statistically significant (p-value = 0.00640). This implies that regular exercise is associated with lower odds of being diagnosed with diabetes.
+
+Overall, this output suggests that gender, family history, and exercise status are significant predictors of diabetes diagnosis in this model, while age is not statistically significant.
+
+```{r}
+#open odds.n.ends
+library(package = "odds.n.ends")
+```
+
+```{r}
+# get model fit, model significance, odds ratios
+odds.n.ends(mod = lib.model.small)
+```
+Interpretation:
+
+Logistic regression model significance:
+The chi-squared value of 166.115 with 4 degrees of freedom and a p-value < 0.001 indicate that the overall logistic regression model is statistically significant.
+This means that at least one of the predictor variables has a significant effect on the response variable.
+
+Contingency tables (model fit): frequency predicted:
+This table compares the observed and predicted values for the binary response variable.
+The model correctly predicted 294 cases with a positive response and 49 cases with a negative response.
+The model misclassified 49 cases as positive when they were actually negative, and 15 cases as negative when they were actually positive.
+
+Count R-squared (model fit): percent correctly predicted:
+This value of 84.27518% represents the percentage of cases that the model correctly classified or predicted.
+This indicates a reasonably good overall predictive accuracy, but there is still room for improvement.
+
+Model sensitivity:
+The sensitivity value of 0.9514563 means that the model correctly identified 95.15% of the actual positive cases.
+This suggests that the model has a high ability to detect true positive cases.
+
+Model specificity:
+The specificity value of 0.5 means that the model correctly identified 50% of the actual negative cases.
+This indicates a relatively low ability to identify true negative cases.
+
+Predictor odds ratios and 95% CI:
+This table displays the odds ratios (OR) and their associated 95% confidence intervals for each predictor variable in the model.
+An odds ratio greater than 1 indicates that higher values of the predictor are associated with higher odds of the outcome, while an odds ratio less than 1 indicates lower odds of the outcome.
+The confidence intervals provide a range of plausible values for the true odds ratio, and intervals that do not include 1 suggest a statistically significant effect of the predictor variable on the odds of the outcome.
+
+Interpret of the odds ratios and confidence intervals for each predictor:
+(Intercept): OR = 0.1993754, CI = (0.06975742, 0.5448957)
+The intercept represents the odds of the outcome when all predictor variables are set to their reference levels.
+The confidence interval does not include 1, indicating a statistically significant effect.
+
+Age: OR = 1.0106348, CI = (0.99096397, 1.0309687)
+The odds ratio of 1.0106348 suggests that a one-unit increase in age is associated with a slight increase in the odds of the outcome.
+However, the confidence interval includes 1, indicating that the effect of age is not statistically significant in this model.
+
+GenderMale: OR = 9.7103606, CI = (5.02405906, 20.0800295)
+The odds ratio of 9.7103606 indicates that males have approximately 9.7 times higher odds of the outcome compared to females (the reference level), after adjusting for other variables in the model.
+The confidence interval does not include 1, indicating a statistically significant effect.
+
+Family_HistoryYes: OR = 11.0219003, CI = (5.23872002, 24.5546926)
+Individuals with a family history of the condition (Family_HistoryYes = 1) have approximately 11 times higher odds of the outcome compared to those without a family history.
+The confidence interval does not include 1, indicating a statistically significant effect.
+
+Exercise_newRegular: OR = 0.3331276, CI = (0.14949391, 0.7319016)
+Individuals who exercise regularly (Exercise_newRegular = 1) have lower odds of the outcome compared to those who do not exercise regularly.
+The confidence interval does not include 1, indicating a statistically significant effect.
+
+Overall, this output suggests that the logistic regression model is statistically significant, with gender, family history, and exercise status being significant predictors of the outcome. The model has a high sensitivity but a relatively low specificity, indicating that it performs better in identifying true positive cases than true negative cases.
+
+```{r}
+lib.model.diet <- glm(formula = Diagnosis.new ~ Age + Gender+ HbA1c+ Smoking_new + Family_History+ Exercise_new + Diet_new ,
+                 data = diabetes.diagnosed.cleaned,
+                 family = binomial("logit"))
+```
+
+
+```{r}
+summary(lib.model.diet)
+```
+Coefficients:
+(Intercept): -33.185969
+This is the log-odds of being diagnosed with diabetes when all predictor variables are set to their reference levels (e.g., Age = 0, Gender = Female, HbA1c = 0, Smoking_new = No, Family_History = No, Exercise_new = Not Regular, Diet_new = Good).
+The large negative value suggests that the baseline odds of being diagnosed are low when all predictors are at their reference levels.
+
+Age: -0.002761
+The coefficient is negative but very close to zero, and the p-value (0.8860) indicates that it is not statistically significant.
+This suggests that age does not have a significant effect on the odds of being diagnosed with diabetes in this model, after adjusting for other predictors.
+
+GenderMale: 7.170788
+The positive coefficient indicates that males have higher odds of being diagnosed with diabetes compared to females (the reference level).
+The coefficient is statistically significant (p-value = 2.50e-07).
+
+HbA1c: 4.193587
+The positive coefficient suggests that higher HbA1c levels are associated with higher odds of being diagnosed with diabetes.
+The coefficient is statistically significant (p-value = 5.62e-09).
+
+Smoking_newYes: 7.567076
+The positive coefficient indicates that individuals who smoke (Smoking_newYes = 1) have higher odds of being diagnosed with diabetes compared to non-smokers (the reference level).
+The coefficient is statistically significant (p-value = 7.87e-08).
+
+Family_HistoryYes: -1.846562
+The negative coefficient suggests that individuals with a family history of diabetes (Family_HistoryYes = 1) have lower odds of being diagnosed compared to those without a family history (the reference level).
+This coefficient is statistically significant (p-value = 0.0411), but the direction of the effect is counterintuitive and may warrant further investigation.
+
+Exercise_newRegular: 2.126758
+The positive coefficient indicates that individuals who exercise regularly (Exercise_newRegular = 1) have higher odds of being diagnosed with diabetes compared to those who do not exercise regularly (the reference level).
+This coefficient is statistically significant (p-value = 0.0149), but the direction of the effect is counterintuitive and may require further investigation or clarification.
+
+Diet_newPoor: 4.632438
+The positive coefficient suggests that individuals with a poor diet (Diet_newPoor = 1) have higher odds of being diagnosed with diabetes compared to those with a good diet (the reference level).
+The coefficient is statistically significant (p-value = 2.60e-05).
+The odds ratio for Diet_newPoor can be calculated as exp(4.632438) = 102.7643, which means that individuals with a poor diet have approximately 103 times higher odds of being diagnosed than those with a good diet, holding other variables constant.
+
+Null deviance and Residual deviance:
+The null deviance (449.315) represents the deviance of the model with no predictors.
+The residual deviance (96.524) is the deviance of the fitted model, which is much lower than the null deviance, indicating a better fit.
+
+AIC (Akaike Information Criterion):
+The AIC value (112.52) is a measure of the relative quality of the statistical model, with lower values indicating a better fit.
+
+Based on this output, the model suggests that factors like gender, HbA1c levels, smoking status, and diet quality are significant predictors of being diagnosed with diabetes. However, age does not appear to be a significant predictor in this particular model.
+```{r}
+# get model fit, model significance, odds ratios
+odds.n.ends(mod = lib.model.diet)
+```
+Intercept): OR = 3.868268e-15, CI = (1.897695e-20, 4.145197e-11)
+
+The intercept represents the odds of the outcome when all predictor variables are set to their reference levels.
+The extremely small odds ratio and narrow confidence interval suggest that the baseline odds of being diagnosed with diabetes are very low when all predictors are at their reference levels.
+
+Age: OR = 0.9972429, CI = (0.9589214, 1.035143)
+The odds ratio of 0.9972429 suggests that a one-unit increase in age is associated with a slightly lower odds of being diagnosed with diabetes, but the confidence interval includes 1, indicating that the effect is not statistically significant.
+
+GenderMale: OR = 1300.869, CI = (123.2357, 29566.52)
+The odds ratio of 1300.869 indicates that males have approximately 1300 times higher odds of being diagnosed with diabetes compared to females (the reference level), after adjusting for other variables in the model.
+The wide confidence interval suggests substantial uncertainty in the precise value of the odds ratio, but the entire interval is above 1, indicating a statistically significant effect.
+
+HbA1c: OR = 66.26004, CI = (18.98586, 326.3111)
+A one-unit increase in HbA1c (Hemoglobin A1c) level is associated with 66.26 times higher odds of being diagnosed with diabetes, holding other variables constant.
+The confidence interval does not include 1, indicating a statistically significant effect.
+
+Smoking_newYes: OR = 1933.479, CI = (167.1461, 44286.21)
+Individuals who smoke (Smoking_newYes = 1) have approximately 1933 times higher odds of being diagnosed with diabetes compared to non-smokers, after adjusting for other variables.
+The wide confidence interval suggests substantial uncertainty in the precise value of the odds ratio, but the entire interval is above 1, indicating a statistically significant effect.
+
+Family_HistoryYes: OR = 0.1577786, CI = (0.02231375, 0.8205753)
+Individuals with a family history of diabetes (Family_HistoryYes = 1) have lower odds of being diagnosed compared to those without a family history (the reference level).
+The confidence interval includes values both above and below 1, suggesting that the effect may not be statistically significant.
+
+Exercise_newRegular: OR = 8.387631, CI = (1.746232, 58.74018)
+
+Individuals who exercise regularly (Exercise_newRegular = 1) have approximately 8.4 times higher odds of being diagnosed with diabetes compared to those who do not exercise regularly.
+The confidence interval does not include 1, indicating a statistically significant effect.
+
+Diet_newPoor: OR = 102.7643, CI = (15.12575, 1176.348)
+
+Individuals with a poor diet (Diet_newPoor = 1) have approximately 103 times higher odds of being diagnosed with diabetes compared to those with a good diet (the reference level).
+The confidence interval does not include 1, indicating a statistically significant effect.
+
+Count R-squared (model fit): percent correctly predicted:
+This value of 94.84029% represents the percentage of cases that the model correctly classified or predicted.
+This indicates that the model has a high overall predictive accuracy.
+
+Model sensitivity:
+The sensitivity value of 0.9676375 means that the model correctly identified 96.76% of the actual positive cases (diagnosed with diabetes).
+This suggests that the model has a high ability to detect true positive cases.
+
+Model specificity:
+The specificity value of 0.8877551 means that the model correctly identified 88.78% of the actual negative cases (not diagnosed with diabetes).
+This indicates that the model has a good ability to identify true negative cases.
+
+From the models, we can conclude that even when the person is following Healthy Diet, he has no Family History of Diabetes and is doing exercise Regularly,but if he is taking poor diet then he is more prone to be diagonised with diabetes.
+
+
+
